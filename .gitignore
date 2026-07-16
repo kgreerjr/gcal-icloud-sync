@@ -1,0 +1,8 @@
+# Never commit credentials or private notes
+*notes*.md
+.env
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/

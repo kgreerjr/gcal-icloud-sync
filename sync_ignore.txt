@@ -1,0 +1,6 @@
+# gcal-icloud-sync ignore list — one entry per line.
+# An entry matches an event if it equals the event's UID or its title
+# (case-insensitive, exact match). Matched events are never created, updated,
+# or deleted in iCloud by the sync. Use this for events whose iCloud copies
+# you manage manually and never want the sync to touch.
+# Lines starting with # are comments.

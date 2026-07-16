@@ -1,0 +1,57 @@
+name: gcal-icloud-sync
+
+on:
+  schedule:
+    # :17 past every hour — top-of-hour cron slots are GitHub's most congested
+    # and runs there are frequently delayed or dropped.
+    - cron: "17 * * * *"
+  workflow_dispatch: {}
+
+# One run at a time; a second trigger queues instead of colliding.
+concurrency:
+  group: gcal-icloud-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          ICLOUD_EMAIL: ${{ secrets.ICLOUD_EMAIL }}
+          ICLOUD_APP_PASSWORD: ${{ secrets.ICLOUD_APP_PASSWORD }}
+          ICLOUD_CALENDAR_NAME: ${{ secrets.ICLOUD_CALENDAR_NAME }}
+          GCAL_ICAL_URLS: ${{ secrets.GCAL_ICAL_URLS }}
+          # Optional tuning — uncomment and set as plain values or secrets:
+          # WINDOW_DAYS: "60"
+          # DELETION_SYNC: "true"
+          # MAX_DELETIONS_PER_RUN: "25"
+        run: python gcal_sync.py
+
+      - name: Commit state file if changed
+        run: |
+          git add gcal_sync_state.json
+          if ! git diff --cached --quiet; then
+            git config user.name "gcal-icloud-sync-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git commit -m "chore: update sync state"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push
+          else
+            echo "State unchanged — nothing to commit."
+          fi
