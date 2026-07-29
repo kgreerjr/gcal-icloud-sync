@@ -38,6 +38,20 @@ For a no-risk first look, edit the workflow's "Run sync" step to `python gcal_sy
 | `DELETION_SYNC` | `true` | Set `false` to never delete anything from iCloud |
 | `MAX_DELETIONS_PER_RUN` | `25` | Safety cap on deletions per run |
 
+## Sync Now From Your iPhone (optional)
+
+The hourly schedule is fine for most changes, but after adding an event you sometimes want the sync immediately. An iOS Shortcut can trigger a run in one tap.
+
+1. On GitHub, create a fine-grained personal access token (Settings, Developer settings, Fine-grained tokens): Repository access limited to **your private sync repo only**, with the **Actions** permission set to Read and write. Nothing else.
+2. In the Shortcuts app, create a new shortcut with a single "Get Contents of URL" action:
+   - URL: `https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/actions/workflows/sync.yml/dispatches`
+   - Method: POST
+   - Headers: `Authorization` = `Bearer YOUR_TOKEN`, and `Accept` = `application/vnd.github+json`
+   - Request Body: JSON with one Text field, `ref` = `main`
+3. Name it something like "Sync Calendar" and add it to your Home Screen. Tapping it starts a run within seconds.
+
+The token only allows triggering workflows on that one repo, so the damage ceiling if your phone is compromised is that someone syncs your calendar.
+
 ## Files
 
 - **gcal_sync.py** - The sync engine
