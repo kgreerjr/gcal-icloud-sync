@@ -17,6 +17,8 @@ permissions:
 
 jobs:
   sync:
+    # Don't run in the template repo itself (no secrets there) — only in copies.
+    if: github.repository != 'kgreerjr/gcal-icloud-sync'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
